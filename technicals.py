@@ -39,19 +39,19 @@ class TechnicalCalculator(Calculation, Logging, ABC, variables=["ticker", "date"
     def __call__(self, bars, *args, **kwargs):
         assert isinstance(bars, pd.DataFrame)
         if bool(bars.empty): return bars
-        calculated = self.calculator(bars, *args, **kwargs)
-        calculated = pd.concat(list(calculated), axis=0)
-        calculated = calculated.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
-        return calculated
+        technicals = self.calculator(bars, *args, **kwargs)
+        technicals = pd.concat(list(technicals), axis=0)
+        technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
+        return technicals
 
     def calculator(self, bars, *args, **kwargs):
         bars["date"] = pd.to_datetime(bars["date"])
-        for ticker, dataframe in bars.groupby("ticker"):
-            dataframe = dataframe.sort_values(by="date", ascending=True)
-            calculated = self.calculate(dataframe, *args, **kwargs)
-            if bool(calculated.empty): continue
-            self.alert(calculated)
-            yield calculated
+        for ticker, bars in bars.groupby("ticker"):
+            bars = bars.sort_values(by="date", ascending=True)
+            technicals = self.calculate(bars, *args, **kwargs)
+            if bool(technicals.empty): continue
+            self.alert(technicals)
+            yield technicals
 
     def alert(self, dataframe):
         instrument = str(Concepts.Securities.Instrument.STOCK).title()
