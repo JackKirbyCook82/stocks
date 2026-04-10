@@ -42,6 +42,8 @@ class TechnicalCalculator(Calculation, Logging, ABC, variables=["ticker", "date"
         technicals = self.calculator(bars, *args, **kwargs)
         technicals = pd.concat(list(technicals), axis=0)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
+        technicals = technicals.reset_index(drop=True, inplace=False)
+        self.alert(technicals)
         return technicals
 
     def calculator(self, bars, *args, **kwargs):
@@ -50,7 +52,6 @@ class TechnicalCalculator(Calculation, Logging, ABC, variables=["ticker", "date"
             bars = bars.sort_values(by="date", ascending=True)
             technicals = self.calculate(bars, *args, **kwargs)
             if bool(technicals.empty): continue
-            self.alert(technicals)
             yield technicals
 
     def alert(self, dataframe):
