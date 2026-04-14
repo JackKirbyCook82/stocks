@@ -10,10 +10,9 @@ import numpy as np
 import pandas as pd
 from abc import ABC
 
+from support.finance import Concepts, Alerting
 from support.equations import Equations
 from support.meta import RegistryMeta
-from support.finance import Concepts
-from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -32,7 +31,7 @@ class TechnicalCalculatorMeta(type(Equations), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(Equations, Logging, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(Equations, Alerting, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
@@ -43,7 +42,7 @@ class TechnicalCalculator(Equations, Logging, ABC, variables=["ticker", "date", 
         technicals = pd.concat(list(technicals), axis=0)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
-        self.alert(technicals)
+        self.alert(technicals, instrument=Concepts.Securities.Instrument.STOCK)
         return technicals
 
     def calculator(self, bars, *args, **kwargs):
@@ -53,11 +52,6 @@ class TechnicalCalculator(Equations, Logging, ABC, variables=["ticker", "date", 
             technicals = self.equate(bars, *args, **kwargs)
             if bool(technicals.empty): continue
             yield technicals
-
-    def alert(self, dataframe):
-        instrument = str(Concepts.Securities.Instrument.STOCK).title()
-        tickers = "|".join(list(dataframe["ticker"].unique()))
-        self.console("Calculated", f"{str(instrument)}[{str(tickers)}, {len(dataframe):.0f}]")
 
 
 class StateCalculator(TechnicalCalculator): pass
