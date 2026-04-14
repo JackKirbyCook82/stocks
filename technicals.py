@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from abc import ABC
 
-from support.calculations import Calculation
+from support.equations import Equations
 from support.meta import RegistryMeta
 from support.finance import Concepts
 from support.mixins import Logging
@@ -22,7 +22,7 @@ __copyright__ = "Copyright 2026, Jack Kirby Cook"
 __license__ = "MIT License"
 
 
-class TechnicalCalculatorMeta(type(Calculation), RegistryMeta):
+class TechnicalCalculatorMeta(type(Equations), RegistryMeta):
     def __call__(cls, *args, technicals, **kwargs):
         assert isinstance(technicals, list)
         subclasses = [cls[technical] for technical in technicals]
@@ -32,7 +32,7 @@ class TechnicalCalculatorMeta(type(Calculation), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(Calculation, Logging, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(Equations, Logging, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
@@ -50,7 +50,7 @@ class TechnicalCalculator(Calculation, Logging, ABC, variables=["ticker", "date"
         bars["date"] = pd.to_datetime(bars["date"])
         for ticker, bars in bars.groupby("ticker"):
             bars = bars.sort_values(by="date", ascending=True)
-            technicals = self.calculate(bars, *args, **kwargs)
+            technicals = self.equate(bars, *args, **kwargs)
             if bool(technicals.empty): continue
             yield technicals
 
