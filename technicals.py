@@ -39,10 +39,10 @@ class TechnicalCalculator(Generator, Equations, Alerting, ABC, variables=["ticke
     def __call__(self, bars, *args, **kwargs):
         assert isinstance(bars, pd.DataFrame)
         if bool(bars.empty): return bars
-        technicals = self.generator(bars, *args, **kwargs)
+        technicals = self.generate(bars, *args, **kwargs)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
-        self.alert(technicals, instrument=Concepts.Securities.Instrument.STOCK)
+        self.alert(technicals, title="Calculated", instrument=Concepts.Securities.Instrument.STOCK)
         return technicals
 
     def generator(self, bars, *args, **kwargs):
