@@ -11,6 +11,7 @@ import pandas as pd
 from abc import ABC
 
 from support.finance import Concepts, Alerting
+from support.calculations import Generator
 from support.equations import Equations
 from support.meta import RegistryMeta
 
@@ -31,25 +32,24 @@ class TechnicalCalculatorMeta(type(Equations), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(Equations, Alerting, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(Generator, Equations, Alerting, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
     def __call__(self, bars, *args, **kwargs):
         assert isinstance(bars, pd.DataFrame)
         if bool(bars.empty): return bars
-        technicals = self.calculator(bars, *args, **kwargs)
-        technicals = pd.concat(list(technicals), axis=0)
+        technicals = self.generator(bars, *args, **kwargs)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
         self.alert(technicals, instrument=Concepts.Securities.Instrument.STOCK)
         return technicals
 
-    def calculator(self, bars, *args, **kwargs):
+    def generator(self, bars, *args, **kwargs):
         bars["date"] = pd.to_datetime(bars["date"])
         for ticker, bars in bars.groupby("ticker"):
             bars = bars.sort_values(by="date", ascending=True)
-            technicals = self.equate(bars, *args, **kwargs)
+            technicals = self.execute(bars, *args, **kwargs)
             if bool(technicals.empty): continue
             yield technicals
 
