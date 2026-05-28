@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 from abc import ABC
 
-from support.finance import Concepts, Alerting
 from support.calculations import Generator
 from support.equations import Equations
 from support.meta import RegistryMeta
