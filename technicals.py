@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from abc import ABC
 
-from finance.variables import Alerting, Concepts
+from finance.variables import Alerting, Enumerations
 from support.calculations import Generator
 from support.equations import Equations
 from support.meta import RegistryMeta
@@ -41,7 +41,7 @@ class TechnicalCalculator(Generator, Equations, Alerting, ABC, variables=["ticke
         technicals = self.generate(bars, *args, **kwargs)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
-        self.alert(technicals, title="Calculated", instrument=Concepts.Instrument.STOCK)
+        self.alert(technicals, title="Calculated", instrument=Enumerations.Instrument.STOCK)
         return technicals
 
     def generator(self, bars, *args, **kwargs):
@@ -54,20 +54,20 @@ class TechnicalCalculator(Generator, Equations, Alerting, ABC, variables=["ticke
 
 
 class StateCalculator(TechnicalCalculator): pass
-class BarsCalculator(StateCalculator, register=Concepts.Technical.BARS): pass
-class StatsCalculator(StateCalculator, register=Concepts.Technical.STATS):
+class BarsCalculator(StateCalculator, register=Enumerations.Technical.BARS): pass
+class StatsCalculator(StateCalculator, register=Enumerations.Technical.STATS):
     volatility = lambda pctgains, *, period: pctgains.rolling(period).std()
     trend = lambda pctgains, *, period: pctgains.rolling(period).mean()
 
 
 class TrendCalculator(TechnicalCalculator): pass
-class SMACalculator(TrendCalculator, register=Concepts.Technical.SMA):
+class SMACalculator(TrendCalculator, register=Enumerations.Technical.SMA):
     sma = lambda adjusted, *, period: adjusted.rolling(window=period).mean()
 
-class EMACalculator(TrendCalculator, register=Concepts.Technical.EMA):
+class EMACalculator(TrendCalculator, register=Enumerations.Technical.EMA):
     ema = lambda adjusted, *, period: adjusted.ewm(span=period, min_periods=period, adjust=False).mean()
 
-class MACDCalculator(TrendCalculator, variables=["macd", "sign", "hist"], register=Concepts.Technical.MACD):
+class MACDCalculator(TrendCalculator, variables=["macd", "sign", "hist"], register=Enumerations.Technical.MACD):
     ema12 = lambda adjusted: adjusted.ewm(span=12, min_periods=12, adjust=False).mean()
     ema26 = lambda adjusted: adjusted.ewm(span=26, min_periods=26, adjust=False).mean()
     macd = lambda ema12, ema26: ema12 - ema26
@@ -76,7 +76,7 @@ class MACDCalculator(TrendCalculator, variables=["macd", "sign", "hist"], regist
 
 
 class MomentumCalculator(TechnicalCalculator): pass
-class RSICalculator(MomentumCalculator, variables=["rsi"], register=Concepts.Technical.RSI):
+class RSICalculator(MomentumCalculator, variables=["rsi"], register=Enumerations.Technical.RSI):
     gain = lambda netgains: netgains.where(netgains > 0, 0)
     loss = lambda netgains: netgains.where(netgains < 0, 0)
     smg14 = lambda gain: gain.rolling(window=14).mean()
@@ -86,13 +86,13 @@ class RSICalculator(MomentumCalculator, variables=["rsi"], register=Concepts.Tec
 
 
 class VolatilityCalculator(TechnicalCalculator): pass
-class BBCalculator(VolatilityCalculator, variables=["bbh", "bbl"], register=Concepts.Technical.BB):
+class BBCalculator(VolatilityCalculator, variables=["bbh", "bbl"], register=Enumerations.Technical.BB):
     sma20 = lambda adjusted: adjusted.rolling(window=20).mean()
     smd20 = lambda adjusted: adjusted.rolling(window=20).std()
     bbh = lambda sma20, smd20: sma20 + 2 * smd20
     bbl = lambda sma20, smd20: sma20 - 2 * smd20
 
-class ATRCalculator(VolatilityCalculator, variables=["atr"], register=Concepts.Technical.ATR):
+class ATRCalculator(VolatilityCalculator, variables=["atr"], register=Enumerations.Technical.ATR):
     xhl = lambda high, low: high - low
     xhc = lambda close, high: (high - close.shift(1)).abs()
     xlc = lambda close, low: (low - close.shift(1)).abs()
@@ -101,7 +101,7 @@ class ATRCalculator(VolatilityCalculator, variables=["atr"], register=Concepts.T
 
 
 class VolumeCalculator(TechnicalCalculator): pass
-class MFICalculator(VolumeCalculator, variables=["mfi"], register=Concepts.Technical.MFI):
+class MFICalculator(VolumeCalculator, variables=["mfi"], register=Enumerations.Technical.MFI):
     typ = lambda close, low, high: (close + low + high) / 3
     rmf = lambda typ, volume: typ * volume
     pmf = lambda typ, rmf: rmf.where(typ.diff() > 0, 0)
@@ -109,12 +109,12 @@ class MFICalculator(VolumeCalculator, variables=["mfi"], register=Concepts.Techn
     mfr = lambda pmf, nmf: pmf.rolling(14).sum() / nmf.rolling(14).sum()
     mfi = lambda mfr: 100 - (100 / (1 + mfr))
 
-class CMFCalculator(VolumeCalculator, variables=["cmf"], register=Concepts.Technical.CMF):
+class CMFCalculator(VolumeCalculator, variables=["cmf"], register=Enumerations.Technical.CMF):
     mfm = lambda close, low, high: (((close - low) - (high - close)) / (high - low)).replace([np.inf, -np.inf], 0).fillna(0)
     mfv = lambda mfm, volume: mfm * volume
     cmf = lambda mfv, volume: mfv.rolling(window=21).sum() / volume.rolling(window=21).sum()
 
-class OBVCalculator(VolumeCalculator, variables=["obv"], register=Concepts.Technical.OBV):
+class OBVCalculator(VolumeCalculator, variables=["obv"], register=Enumerations.Technical.OBV):
     rvf = lambda netgains, volume: (np.sign(netgains) * volume).fillna(0).cumsum()
     mvf = lambda rvf: rvf.abs().max()
     obv = lambda rvf, mvf: 100 * rvf / mvf
