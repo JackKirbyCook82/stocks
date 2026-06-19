@@ -11,7 +11,6 @@ import pandas as pd
 from abc import ABC
 
 from finance.variables import Alerting, Enumerations
-from support.calculations import Generator
 from support.equations import Equations
 from support.meta import RegistryMeta
 
@@ -32,7 +31,7 @@ class TechnicalCalculatorMeta(type(Equations), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(Generator, Equations, Alerting, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(Alerting, Equations, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
@@ -42,6 +41,16 @@ class TechnicalCalculator(Generator, Equations, Alerting, ABC, variables=["ticke
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
         self.alert(technicals, title="Calculated", instrument=Enumerations.Instrument.STOCK)
+        return technicals
+
+    def generate(self, bars, *args, **kwargs):
+        assert isinstance(bars, pd.DataFrame)
+        if bool(bars.empty): return bars
+        generator = self.generator(bars, *args, **kwargs)
+        technicals = list(generator)
+        if bool(technicals): technicals = pd.concat(technicals, axis=0)
+        else: technicals = pd.DataFrame(columns=bars.columns)
+        technicals = technicals.reset_index(drop=True, inplace=False)
         return technicals
 
     def generator(self, bars, *args, **kwargs):
