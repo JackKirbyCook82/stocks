@@ -65,16 +65,16 @@ class TechnicalCalculator(Alerting, Equations, ABC, variables=["ticker", "date",
 class StateCalculator(TechnicalCalculator): pass
 class BarsCalculator(StateCalculator, register=Enumerations.Technical.BARS): pass
 class StatsCalculator(StateCalculator, register=Enumerations.Technical.STATS):
-    volatility = lambda pctgains, period: pctgains.rolling(period).std()
-    trend = lambda pctgains, period: pctgains.rolling(period).mean()
+    volatility = lambda pctgains, *, period: pctgains.rolling(period).std()
+    trend = lambda pctgains, *, period: pctgains.rolling(period).mean()
 
 
 class TrendCalculator(TechnicalCalculator): pass
 class SMACalculator(TrendCalculator, register=Enumerations.Technical.SMA):
-    sma = lambda adjusted, period: adjusted.rolling(window=period).mean()
+    sma = lambda adjusted, *, period: adjusted.rolling(window=period).mean()
 
 class EMACalculator(TrendCalculator, register=Enumerations.Technical.EMA):
-    ema = lambda adjusted, period: adjusted.ewm(span=period, min_periods=period, adjust=False).mean()
+    ema = lambda adjusted, *, period: adjusted.ewm(span=period, min_periods=period, adjust=False).mean()
 
 class MACDCalculator(TrendCalculator, variables=["macd", "sign", "hist"], register=Enumerations.Technical.MACD):
     ema12 = lambda adjusted: adjusted.ewm(span=12, min_periods=12, adjust=False).mean()
