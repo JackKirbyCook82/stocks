@@ -10,7 +10,8 @@ import numpy as np
 import pandas as pd
 from abc import ABC
 
-from finance.variables import Alerting, Enumerations
+from finance.variables import Enumerations
+from finance.logging import Logging
 from support.equations import Equations
 from support.meta import RegistryMeta
 
@@ -31,7 +32,7 @@ class TechnicalCalculatorMeta(type(Equations), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(Alerting, Equations, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(Logging, Equations, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
@@ -40,7 +41,7 @@ class TechnicalCalculator(Alerting, Equations, ABC, variables=["ticker", "date",
         technicals = self.generate(bars, *args, **kwargs)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
-        self.alert(technicals, title="Calculated", instrument=Enumerations.Instrument.STOCK)
+        self.results(technicals, title="Calculated", instrument=Enumerations.Instrument.STOCK)
         return technicals
 
     def generate(self, bars, *args, **kwargs):
