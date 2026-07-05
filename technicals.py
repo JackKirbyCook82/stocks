@@ -36,29 +36,29 @@ class TechnicalCalculator(Logging, Equations, ABC, variables=["ticker", "date", 
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
-    def __call__(self, bars, *args, **kwargs):
+    def __call__(self, bars, /, **kwargs):
         assert isinstance(bars, pd.DataFrame)
-        technicals = self.generate(bars, *args, **kwargs)
+        technicals = self.generate(bars, **kwargs)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
         self.results(technicals, title="Calculated", instrument=Enumerations.Instrument.STOCK)
         return technicals
 
-    def generate(self, bars, *args, **kwargs):
+    def generate(self, bars, /, **kwargs):
         assert isinstance(bars, pd.DataFrame)
         if bool(bars.empty): return bars
-        generator = self.generator(bars, *args, **kwargs)
+        generator = self.generator(bars, **kwargs)
         technicals = list(generator)
         if bool(technicals): technicals = pd.concat(technicals, axis=0)
         else: technicals = pd.DataFrame(columns=bars.columns)
         technicals = technicals.reset_index(drop=True, inplace=False)
         return technicals
 
-    def generator(self, bars, *args, **kwargs):
+    def generator(self, bars, /, **kwargs):
         bars["date"] = pd.to_datetime(bars["date"])
         for ticker, bars in bars.groupby("ticker"):
             bars = bars.sort_values(by="date", ascending=True)
-            technicals = self.execute(bars, *args, **kwargs)
+            technicals = self.execute(bars, **kwargs)
             if bool(technicals.empty): continue
             yield technicals
 
