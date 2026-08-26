@@ -38,10 +38,11 @@ class TechnicalCalculator(Logging, Equations, ABC, variables=["ticker", "date", 
 
     def __call__(self, bars, /, **kwargs):
         assert isinstance(bars, pd.DataFrame)
+        scope = self.scope(bars, instrument=Instrument.STOCK)
         technicals = self.generate(bars, **kwargs)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
-        self.results(technicals, title="Calculated", instrument=Instrument.STOCK)
+        self.results(scope=scope, size=len(technicals), title="Calculated")
         return technicals
 
     def generate(self, bars, /, **kwargs):

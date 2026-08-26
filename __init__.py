@@ -25,9 +25,10 @@ class StockCalculator(Logging, Equations):
 
     def __call__(self, stocks, /, **kwargs):
         assert isinstance(stocks, pd.DataFrame)
+        scope = self.scope(stocks, instrument=Instrument.STOCK)
         calculated = self.execute(stocks, **kwargs)
         stocks = pd.concat([stocks, calculated], axis=1)
-        self.results(stocks, title="Calculated", instrument=Instrument.STOCK)
+        self.results(scope=scope, size=len(stocks), title="Calculated")
         return stocks
 
 
