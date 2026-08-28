@@ -3,6 +3,7 @@
 Created on Thurs Mar 26 2026
 @name:   Technical Objects
 @author: Jack Kirby Cook
+@file:   stocks/technicals.py
 
 """
 

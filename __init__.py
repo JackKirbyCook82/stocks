@@ -3,6 +3,7 @@
 Created on Sun Jul 5 2026
 @name:   Stock Objects
 @author: Jack Kirby Cook
+@file:   stocks/__init__.py
 
 """
 
