@@ -12,9 +12,10 @@ import pandas as pd
 from abc import ABC
 
 from finance.enumerations import Instrument, Technical
-from finance.logging import Logging
+from finance.reporting import Results
 from support.equations import Equations
 from support.meta import RegistryMeta
+from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -33,7 +34,7 @@ class TechnicalCalculatorMeta(type(Equations), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(Logging, Equations, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(Results, Logging, Equations, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
@@ -43,7 +44,8 @@ class TechnicalCalculator(Logging, Equations, ABC, variables=["ticker", "date", 
         technicals = self.generate(bars, **kwargs)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
-        self.results(scope=scope, size=len(technicals), title="Calculated")
+        results = self.results(scope=scope, size=len(technicals))
+        self.console("Calculated", results)
         return technicals
 
     def generate(self, bars, /, **kwargs):
