@@ -22,7 +22,7 @@ __license__ = "MIT License"
 
 
 class StockCalculator(Results, Logging, DataframeEquation):
-    mean = lambda bid, ask, supply, demand: ((bid * demand) + (ask * supply)) / (demand + supply)
+    mean = lambda bid, ask, supply, demand: ((bid * demand) + (ask * supply)) / max(demand + supply, 1e-10)
     median = lambda bid, ask: (bid + ask) / 2
 
     def __call__(self, stocks, /, **kwargs):

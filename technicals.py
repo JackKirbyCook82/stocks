@@ -91,8 +91,8 @@ class MACDCalculator(TrendCalculator, variables=["macd", "sign", "hist"], regist
 
 class MomentumCalculator(TechnicalCalculator): pass
 class RSICalculator(MomentumCalculator, variables=["rsi"], register=Technical.RSI):
-    gain = lambda netgains: netgains.where(netgains > 0, 0)
-    loss = lambda netgains: netgains.where(netgains < 0, 0)
+    gain = lambda netgains: + netgains.where(netgains > 0, 0)
+    loss = lambda netgains: - netgains.where(netgains < 0, 0)
     smg14 = lambda gain: gain.rolling(window=14).mean()
     sml14 = lambda loss: loss.rolling(window=14).mean()
     rsr = lambda smg14, sml14: smg14 / sml14
