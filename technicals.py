@@ -13,7 +13,7 @@ from abc import ABC
 
 from finance.enumerations import Instrument, Technical
 from finance.reporting import Results
-from support.equations import Equations
+from support.equations import DataframeEquation
 from support.meta import RegistryMeta
 from support.mixins import Logging
 
@@ -24,7 +24,7 @@ __copyright__ = "Copyright 2026, Jack Kirby Cook"
 __license__ = "MIT License"
 
 
-class TechnicalCalculatorMeta(type(Equations), RegistryMeta):
+class TechnicalCalculatorMeta(type(DataframeEquation), RegistryMeta):
     def __call__(cls, *args, technicals, **kwargs):
         assert isinstance(technicals, list)
         subclasses = [cls[technical] for technical in technicals]
@@ -34,7 +34,7 @@ class TechnicalCalculatorMeta(type(Equations), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(Results, Logging, Equations, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(Results, Logging, DataframeEquation, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
