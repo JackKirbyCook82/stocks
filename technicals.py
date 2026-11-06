@@ -12,7 +12,7 @@ import pandas as pd
 from abc import ABC
 
 from finance.enumerations import Instrument, Technical
-from finance.reporting import Results
+from finance import Scope, Results, Empty
 from support.equations import DataframeEquation
 from support.meta import RegistryMeta
 from support.mixins import Logging
@@ -34,17 +34,19 @@ class TechnicalCalculatorMeta(type(DataframeEquation), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(Results, Logging, DataframeEquation, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(Scope, Results, DataframeEquation, Logging, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
     def __call__(self, bars, /, **kwargs):
+        if bars is None: raise Empty()
         assert isinstance(bars, pd.DataFrame)
-        scope = self.scope(bars, instrument=Instrument.STOCK)
+        if bars.empty: raise Empty()
+        scope = self.scope(bars)
         technicals = self.generate(bars, **kwargs)
         technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
         technicals = technicals.reset_index(drop=True, inplace=False)
-        results = self.results(scope=scope, size=len(technicals))
+        results = self.results(scope, len(technicals), Instrument.STOCK)
         self.console("Calculated", results)
         return technicals
 
