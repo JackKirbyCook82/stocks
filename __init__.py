@@ -9,10 +9,7 @@ Created on Sun Jul 5 2026
 
 import pandas as pd
 
-from finance.enumerations import Instrument
-from finance import Scope, Results, Empty
 from support.equations import DataframeEquation
-from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -21,19 +18,16 @@ __copyright__ = "Copyright 2026, Jack Kirby Cook"
 __license__ = "MIT License"
 
 
-class StockCalculator(Scope, Results, DataframeEquation, Logging):
-    mean = lambda bid, ask, supply, demand: ((bid * demand) + (ask * supply)) / max(demand + supply, 1e-10)
+class StockCalculator(DataframeEquation):
+    mean = lambda bid, ask, supply, demand: ((bid * demand) + (ask * supply)) / max(demand + supply).clip(lower=1e-10)
     median = lambda bid, ask: (bid + ask) / 2
 
     def __call__(self, stocks, /, **kwargs):
-        if stocks is None: raise Empty()
+        if stocks is None: return None
         assert isinstance(stocks, pd.DataFrame)
-        if stocks.empty: raise Empty()
-        scope = self.scope(stocks)
+        if stocks.empty: return None
         calculated = self.execute(stocks, **kwargs)
         stocks = pd.concat([stocks, calculated], axis=1)
-        results = self.results(scope, len(stocks), Instrument.STOCK)
-        self.console("Calculated", results)
         return stocks
 
 

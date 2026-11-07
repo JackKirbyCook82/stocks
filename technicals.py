@@ -11,11 +11,9 @@ import numpy as np
 import pandas as pd
 from abc import ABC
 
-from finance.enumerations import Instrument, Technical
-from finance import Scope, Results, Empty
+from finance.enumerations import Technical
 from support.equations import DataframeEquation
 from support.meta import RegistryMeta
-from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -34,30 +32,18 @@ class TechnicalCalculatorMeta(type(DataframeEquation), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(Scope, Results, DataframeEquation, Logging, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(DataframeEquation, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
     def __call__(self, bars, /, **kwargs):
-        if bars is None: raise Empty()
+        if bars is None: return None
         assert isinstance(bars, pd.DataFrame)
-        if bars.empty: raise Empty()
-        scope = self.scope(bars)
-        technicals = self.generate(bars, **kwargs)
-        technicals = technicals.sort_values(by=["ticker", "date"], ascending=[True, False], inplace=False)
-        technicals = technicals.reset_index(drop=True, inplace=False)
-        results = self.results(scope, len(technicals), Instrument.STOCK)
-        self.console("Calculated", results)
-        return technicals
-
-    def generate(self, bars, /, **kwargs):
-        assert isinstance(bars, pd.DataFrame)
-        if bool(bars.empty): return bars
+        if bars.empty: return None
         generator = self.generator(bars, **kwargs)
         technicals = list(generator)
-        if bool(technicals): technicals = pd.concat(technicals, axis=0)
-        else: technicals = pd.DataFrame(columns=bars.columns)
-        technicals = technicals.reset_index(drop=True, inplace=False)
+        if not technicals: return None
+        technicals = pd.concat(technicals, axis=0)
         return technicals
 
     def generator(self, bars, /, **kwargs):
@@ -65,7 +51,7 @@ class TechnicalCalculator(Scope, Results, DataframeEquation, Logging, ABC, varia
         for ticker, bars in bars.groupby("ticker"):
             bars = bars.sort_values(by="date", ascending=True)
             technicals = self.execute(bars, **kwargs)
-            if bool(technicals.empty): continue
+            if technicals.empty: continue
             yield technicals
 
 
