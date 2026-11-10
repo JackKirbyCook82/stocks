@@ -14,6 +14,7 @@ from abc import ABC
 from finance.enumerations import Technical
 from support.equations import DataframeEquation
 from support.meta import RegistryMeta
+from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -32,7 +33,7 @@ class TechnicalCalculatorMeta(type(DataframeEquation), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(DataframeEquation, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(DataframeEquation, Logging, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 

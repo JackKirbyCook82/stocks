@@ -10,6 +10,7 @@ Created on Sun Jul 5 2026
 import pandas as pd
 
 from support.equations import DataframeEquation
+from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -18,7 +19,7 @@ __copyright__ = "Copyright 2026, Jack Kirby Cook"
 __license__ = "MIT License"
 
 
-class StockCalculator(DataframeEquation):
+class StockCalculator(DataframeEquation, Logging):
     mean = lambda bid, ask, supply, demand: ((bid * demand) + (ask * supply)) / max(demand + supply).clip(lower=1e-10)
     median = lambda bid, ask: (bid + ask) / 2
 
