@@ -11,12 +11,11 @@ import numpy as np
 import pandas as pd
 from abc import ABC
 
+from finance.console import LoggingDecorator, LoggingMixin
 from finance.enumerations import Enumerations
-from finance.console import LoggingDecorator
-from finance.variables import Categories
+from finance.variables import Collections
 from support.equations import DataframeEquation
 from support.meta import RegistryMeta
-from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -35,11 +34,11 @@ class TechnicalCalculatorMeta(type(DataframeEquation), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(DataframeEquation, Logging, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(DataframeEquation, LoggingMixin, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
-    @LoggingDecorator(categories=[Categories.Ticker], title="Calculated")
+    @LoggingDecorator(Collections.Tickers, title="Calculated")
     def __call__(self, bars, /, **kwargs):
         if bars is None: return None
         assert isinstance(bars, pd.DataFrame)

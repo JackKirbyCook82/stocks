@@ -9,10 +9,9 @@ Created on Sun Jul 5 2026
 
 import pandas as pd
 
-from finance.console import LoggingDecorator
-from finance.variables import Categories
+from finance.console import LoggingDecorator, LoggingMixin
+from finance.variables import Collections
 from support.equations import DataframeEquation
-from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -21,11 +20,11 @@ __copyright__ = "Copyright 2026, Jack Kirby Cook"
 __license__ = "MIT License"
 
 
-class StockCalculator(DataframeEquation, Logging):
+class StockCalculator(DataframeEquation, LoggingMixin):
     mean = lambda bid, ask, supply, demand: ((bid * demand) + (ask * supply)) / max(demand + supply).clip(lower=1e-10)
     median = lambda bid, ask: (bid + ask) / 2
 
-    @LoggingDecorator(categories=[Categories.Ticker], title="Calculated")
+    @LoggingDecorator(Collections.Tickers, title="Calculated")
     def __call__(self, stocks, /, **kwargs):
         if stocks is None: return None
         assert isinstance(stocks, pd.DataFrame)
