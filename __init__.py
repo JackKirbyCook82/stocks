@@ -24,7 +24,7 @@ class StockCalculator(DataframeEquation, LoggingMixin):
     mean = lambda bid, ask, supply, demand: ((bid * demand) + (ask * supply)) / max(demand + supply).clip(lower=1e-10)
     median = lambda bid, ask: (bid + ask) / 2
 
-    @LoggingDecorator(Collections.Tickers, title="Calculated")
+    @LoggingDecorator(Collections.Ticker, title="Calculated")
     def __call__(self, stocks, /, **kwargs):
         if stocks is None: return None
         assert isinstance(stocks, pd.DataFrame)

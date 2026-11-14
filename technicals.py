@@ -38,7 +38,7 @@ class TechnicalCalculator(DataframeEquation, LoggingMixin, ABC, variables=["tick
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
-    @LoggingDecorator(Collections.Tickers, title="Calculated")
+    @LoggingDecorator(Collections.Ticker, title="Calculated")
     def __call__(self, bars, /, **kwargs):
         if bars is None: return None
         assert isinstance(bars, pd.DataFrame)
