@@ -11,11 +11,13 @@ import numpy as np
 import pandas as pd
 from abc import ABC
 
-from finance.console import LoggingDecorators, LoggingMixin
 from finance.variables import Collection, Variables
 from finance.enumerations import Enumerations
+from finance.console import LoggingDecorators
 from support.equations import DataframeEquation
 from support.meta import RegistryMeta
+from support.pipeline import Pipeline
+from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -24,7 +26,7 @@ __copyright__ = "Copyright 2026, Jack Kirby Cook"
 __license__ = "MIT License"
 
 
-class TechnicalCalculatorMeta(type(DataframeEquation), RegistryMeta):
+class TechnicalCalculatorMeta(type(DataframeEquation), type(Pipeline), RegistryMeta):
     def __call__(cls, *args, technicals, **kwargs):
         assert isinstance(technicals, list)
         subclasses = [cls[technical] for technical in technicals]
@@ -34,7 +36,7 @@ class TechnicalCalculatorMeta(type(DataframeEquation), RegistryMeta):
         return instance
 
 
-class TechnicalCalculator(DataframeEquation, LoggingMixin, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(DataframeEquation, Pipeline, Logging, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
