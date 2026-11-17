@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from abc import ABC
 
-from finance.console import LoggingDecorator, LoggingMixin
+from finance.console import LoggingDecorators, LoggingMixin
 from finance.variables import Collection, Variables
 from finance.enumerations import Enumerations
 from support.equations import DataframeEquation
@@ -38,7 +38,7 @@ class TechnicalCalculator(DataframeEquation, LoggingMixin, ABC, variables=["tick
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
-    @LoggingDecorator(Collection[Variables.Ticker], title="Calculated")
+    @LoggingDecorators.Function(Collection[Variables.Ticker], title="Calculated")
     def __call__(self, bars, /, **kwargs):
         if bars is None: return None
         assert isinstance(bars, pd.DataFrame)
