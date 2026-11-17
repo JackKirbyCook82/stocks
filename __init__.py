@@ -12,8 +12,8 @@ import pandas as pd
 from finance.variables import Collection, Variables
 from finance.console import LoggingDecorators
 from support.equations import DataframeEquation
-from support.pipeline import Pipeline
-from support.mixins import Logging
+from support.mixins import LoggingMixin
+from support.pipeline import Pipelines
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -22,10 +22,11 @@ __copyright__ = "Copyright 2026, Jack Kirby Cook"
 __license__ = "MIT License"
 
 
-class StockCalculator(DataframeEquation, Pipeline, Logging):
+class StockCalculator(DataframeEquation, LoggingMixin):
     mean = lambda bid, ask, supply, demand: ((bid * demand) + (ask * supply)) / max(demand + supply).clip(lower=1e-10)
     median = lambda bid, ask: (bid + ask) / 2
 
+    @Pipelines.Function()
     @LoggingDecorators.Function(Collection[Variables.Ticker], title="Calculated")
     def __call__(self, stocks, /, **kwargs):
         if stocks is None: return None

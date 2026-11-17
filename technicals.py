@@ -15,9 +15,9 @@ from finance.variables import Collection, Variables
 from finance.enumerations import Enumerations
 from finance.console import LoggingDecorators
 from support.equations import DataframeEquation
+from support.mixins import LoggingMixin
+from support.pipeline import Pipelines
 from support.meta import RegistryMeta
-from support.pipeline import Pipeline
-from support.mixins import Logging
 
 __version__ = "1.0.0"
 __author__ = "Jack Kirby Cook"
@@ -26,7 +26,7 @@ __copyright__ = "Copyright 2026, Jack Kirby Cook"
 __license__ = "MIT License"
 
 
-class TechnicalCalculatorMeta(type(DataframeEquation), type(Pipeline), RegistryMeta):
+class TechnicalCalculatorMeta(type(DataframeEquation), RegistryMeta):
     def __call__(cls, *args, technicals, **kwargs):
         assert isinstance(technicals, list)
         subclasses = [cls[technical] for technical in technicals]
@@ -36,10 +36,11 @@ class TechnicalCalculatorMeta(type(DataframeEquation), type(Pipeline), RegistryM
         return instance
 
 
-class TechnicalCalculator(DataframeEquation, Pipeline, Logging, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
+class TechnicalCalculator(DataframeEquation, LoggingMixin, ABC, variables=["ticker", "date", "adjusted"], metaclass=TechnicalCalculatorMeta):
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
+    @Pipelines.Function()
     @LoggingDecorators.Function(Collection[Variables.Ticker], title="Calculated")
     def __call__(self, bars, /, **kwargs):
         if bars is None: return None
