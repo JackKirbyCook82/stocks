@@ -43,7 +43,7 @@ class TechnicalCalculator(DataframeEquation, LoggingMixin, ABC, variables=["tick
     def __init_subclass__(cls, **kwargs):
         pass
 
-    @Pipelines.Function()
+    @Pipelines.Function(locator=0)
     @LoggingDecorators.Function(Collection[Variables.Ticker], title="Calculated")
     def __call__(self, bars, /, **kwargs):
         if bars is None: return None
