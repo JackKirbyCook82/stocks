@@ -40,6 +40,9 @@ class TechnicalCalculator(DataframeEquation, LoggingMixin, ABC, variables=["tick
     pctgains = lambda adjusted: adjusted.pct_change(1)
     netgains = lambda adjusted: adjusted.diff()
 
+    def __init_subclass__(cls, **kwargs):
+        pass
+
     @Pipelines.Function()
     @LoggingDecorators.Function(Collection[Variables.Ticker], title="Calculated")
     def __call__(self, bars, /, **kwargs):
